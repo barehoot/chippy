@@ -35,3 +35,4 @@
 | 2026-11-24T10:04:45+00:00 | SR-051 | claude-code | manual | 4 | 371 | test_ui | no | SR-051: Streamlit shift detail and Altair charts, T-UI-01 |
 | 2026-11-24T10:04:45+00:00 | SR-052 | claude-code | manual | 5 | 436 | test_ui_pages | no | SR-052: Streamlit brief page with provenance, Trust and Settings pages, T-UI-02, page smoke tests |
 | 2026-11-24T10:16:45+00:00 | SR-024 | claude-code | manual | 4 | 45 | T-ART-01 | no | SR-024: R2_FEED also catches partial retailer feed gaps |
+| 2026-11-24T10:16:45+00:00 | SR-032 | claude-code | manual | 5 | 19 | - | no | SR-032: template brief wording, held-back list one line per brand and market |

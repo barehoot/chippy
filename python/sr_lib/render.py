@@ -95,7 +95,8 @@ def render_markdown(llm: dict, pack: dict, currency: str) -> str:
         out += ["## Held back for data checks", ""]
         for h in held:
             rules = ", ".join(RULE_WORDS.get(r, r) for r in h.get("rules", []))
-            out.append(f"- {h['brand']} in {h['market']}: {f(_fact_text(h.get('delta'), pack, currency))} ({rules})")
+            out.append(f"- {h['brand']} in {h['market']}, {CMP_WORDS.get(h.get('cmp_code'), '')}: "
+                       f"{f(_fact_text(h.get('delta'), pack, currency))} ({rules})")
         out.append("")
     if llm.get("watchlist"):
         out += ["## Watchlist", ""] + [f"- {f(w)}" for w in llm["watchlist"]] + [""]
@@ -121,7 +122,8 @@ def render_html(llm: dict, pack: dict, currency: str) -> str:
         out.append("<h2>Held back for data checks</h2><ul>")
         for x in held:
             rules = ", ".join(RULE_WORDS.get(r, r) for r in x.get("rules", []))
-            out.append(f"<li>{e(x['brand'])} in {e(x['market'])}: {h(_fact_text(x.get('delta'), pack, currency))} ({e(rules)})</li>")
+            out.append(f"<li>{e(x['brand'])} in {e(x['market'])}, {e(CMP_WORDS.get(x.get('cmp_code'), ''))}: "
+                       f"{h(_fact_text(x.get('delta'), pack, currency))} ({e(rules)})</li>")
         out.append("</ul>")
     if llm.get("watchlist"):
         out.append("<h2>Watchlist</h2><ul>" + "".join(f"<li>{h(w)}</li>" for w in llm["watchlist"]) + "</ul>")

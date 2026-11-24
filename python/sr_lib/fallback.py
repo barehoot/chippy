@@ -4,10 +4,13 @@ Used when both LLM attempts fail (E10, E11), so a brief is always published. It 
 numbers and must pass validate_brief (tested). Per shift:
   title         "<brand> <gained|lost> share in <market>"
   why           "Largest driver: <term> ({{fX}}). Most of it came from <retailer> ({{fY}})."
+                (with no retailer split: "<brand> took the most ({{fZ}})." from the share flow)
   so_what       "Check <term> at <retailer>."
   next_question "Who took the share?" (a loss) or "Who lost the share <brand> gained?" (a gain)
 """
 from __future__ import annotations
+
+from .render import CMP_WORDS
 
 
 def _largest_term(shift: dict, facts: dict) -> dict | None:
@@ -29,8 +32,12 @@ def _shift(shift: dict, facts: dict) -> dict:
         why = f"Largest driver: {term['term']} ({{{{{term['fact']}}}}})."
     else:
         why = f"Share moved {{{{{shift['delta']}}}}}; no driver split is available for this shift."
+    flow = (shift.get("flow") or [None])[0]
     if where:
         why += f" Most of it came from {where['contributor']} ({{{{{where['fact']}}}}})."
+    elif flow:
+        why += (f" {flow['brand']} took the most ({{{{{flow['fact']}}}}})." if loss
+                else f" It came mostly from {flow['brand']} ({{{{{flow['fact']}}}}}).")
     if term and where:
         so_what = f"Check {term['term']} at {where['contributor']}."
     elif term:
@@ -60,10 +67,10 @@ def template_brief(pack: dict) -> dict:
     focus, parent = scope.get("focus_manufacturer", ""), scope.get("parent_market", "")
     if shifts:
         top = shifts[0]
-        verb = "lost" if top.get("direction") == "LOSS" else "gained"
-        headline = f"Top shift for {focus}: {top['brand']} {verb} {{{{{top['delta']}}}}} in {top['market']}."
+        cmp = CMP_WORDS.get(top.get("cmp_code"), "")
+        headline = f"Top shift for {focus}: {top['brand']} in {top['market']}, {{{{{top['delta']}}}}} ({cmp})."
         if len(headline) > 200:
-            headline = f"Top shift: {top['brand']} {verb} {{{{{top['delta']}}}}}."
+            headline = f"Top shift: {top['brand']}, {{{{{top['delta']}}}}}."
     else:
         headline = f"No material share shifts for {focus} in {parent} this week."[:200]
     return {"headline": headline,

@@ -163,7 +163,8 @@ def shifts(run_id: str) -> pd.DataFrame:
 
 @st.cache_data(ttl=TTL_S, show_spinner=False)
 def held_back(run_id: str) -> pd.DataFrame:
-    """POSSIBLE_DATA_EFFECT shifts, top 3 by SCORE, with the HIGH rules that matched them (the SP_RANK match)."""
+    """POSSIBLE_DATA_EFFECT shifts, one per brand x market (B05), top 3 by SCORE, with the HIGH rules that matched
+    them (the SP_RANK match)."""
     df = q("""SELECT r.SHIFT_ID, r.CMP_CODE, r.MARKET_ID, r.BRAND, 100 * ANY_VALUE(r.D_SHARE) AS D_SHARE_PTS,
                      ANY_VALUE(r.SCORE) AS SCORE, ARRAY_AGG(DISTINCT a.RULE_ID) AS RULES
               FROM SR_DB.APP.SHIFT_RANKED r
@@ -172,6 +173,7 @@ def held_back(run_id: str) -> pd.DataFrame:
                AND a.CATEGORY = r.CATEGORY AND (a.BRAND IS NULL OR a.BRAND = r.BRAND) AND a.SEVERITY = 'HIGH'
               WHERE r.RUN_ID = ? AND r.ARTEFACT_LABEL = 'POSSIBLE_DATA_EFFECT'
               GROUP BY r.SHIFT_ID, r.CMP_CODE, r.MARKET_ID, r.BRAND
+              QUALIFY ROW_NUMBER() OVER (PARTITION BY r.MARKET_ID, r.BRAND ORDER BY ANY_VALUE(r.SCORE) DESC) = 1
               ORDER BY SCORE DESC LIMIT 3""", [run_id])
     df["RULES"] = [_variant(v) or [] for v in df.RULES]
     return df
