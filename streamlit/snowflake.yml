@@ -1,0 +1,32 @@
+definition_version: 2
+entities:
+  share_radar:
+    type: streamlit
+    identifier:
+      name: SHARE_RADAR
+      database: SR_DB
+      schema: APP
+    query_warehouse: SR_WH_XS
+    title: "Share Radar"
+    main_file: streamlit_app.py
+    artifacts:
+      - streamlit_app.py
+      - environment.yml
+      - .streamlit/config.toml
+      - pages/
+      - sr_ui/
+  share_radar_admin:
+    type: streamlit
+    identifier:
+      name: SHARE_RADAR_ADMIN
+      database: SR_DB
+      schema: APP
+    query_warehouse: SR_WH_XS
+    title: "Share Radar admin"
+    main_file: admin_app.py
+    artifacts:
+      - admin_app.py
+      - environment.yml
+      - .streamlit/config.toml
+      - pages/
+      - sr_ui/

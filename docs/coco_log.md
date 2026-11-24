@@ -31,3 +31,4 @@
 | 2026-11-24T09:54:13+00:00 | SR-043 | claude-code | manual | 3 | 149 | - | no | SR-043: Cortex Agent specification and CoWork registration (+ SR-045 stretch steps) |
 | 2026-11-24T09:56:27+00:00 | SR-044 | claude-code | manual | 5 | 426 | test_eval | no | SR-044: golden set (30 questions, T3 mix) and the evaluation runner |
 | 2026-11-24T09:58:34+00:00 | SR-054 | claude-code | manual | 8 | 337 | - | no | SR-054: email integration, alert on new brief, observability and cost (+ SR-055, SR-057 stretch) |
+| 2026-11-24T10:04:45+00:00 | SR-050 | claude-code | manual | 12 | 840 | - | no | SR-050: Streamlit apps: project, navigation, data layer, Radar with replay panel |

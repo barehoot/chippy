@@ -1,0 +1,9 @@
+# streamlit/environment.yml: warehouse runtime takes the Snowflake Anaconda channel only; pin with "="
+name: sf_env
+channels:
+  - snowflake
+dependencies:
+  - streamlit=1.51.0          # needs 1.37 or later: st.navigation, st.fragment(run_every), dataframe row selection
+  - snowflake-snowpark-python
+  - pandas
+  - altair
