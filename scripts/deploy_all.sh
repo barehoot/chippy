@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Share Radar: deploy everything in the L2 order.
 #   00_setup -> 10_src -> 20_core -> 40_app/401 (tables) -> sr_lib.zip PUT -> 30_ml -> rest of 40_app -> 50_sem
-#   -> load KB -> 60_ops -> 70_sec/701, 702 -> the two Streamlit apps -> 70_sec/703 -> CoCo log flush
+#   -> load KB -> 70_sec/701 -> 60_ops -> 70_sec/702 -> the two Streamlit apps -> 70_sec/703 -> CoCo log flush
+# 701 runs before 60_ops (decision B11): SR_APP needs CREATE TASK/STREAM/ALERT and SR_UI must exist first.
 #
 # Usage: scripts/deploy_all.sh            (connection "sr", or set SR_CONNECTION)
 #        SKIP_APPS=1 scripts/deploy_all.sh  (SQL only)
@@ -68,7 +69,10 @@ python3 scripts/load_kb.py --connection "$CONN"
 run_sql sql/50_sem/504_agent.sql
 run_sql sql/50_sem/505_cowork.sql organizer
 
-# 60_ops (each file starts with USE ROLE SR_APP)
+# Grants before 60_ops (B11): SR_APP creates the stream, tasks and alert there; 606 grants to SR_UI
+run_sql sql/70_sec/701_grants.sql organizer
+
+# 60_ops (stream, tasks and alert as SR_APP)
 run_sql sql/60_ops/601_stream_task.sql
 run_sql sql/60_ops/602_replay.sql
 run_sql sql/60_ops/603_notifications.sql organizer
@@ -76,8 +80,7 @@ run_sql sql/60_ops/604_alert.sql
 run_sql sql/60_ops/606_observability.sql
 [[ -n "${WITH_DMF:-}" ]] && run_sql sql/60_ops/605_dmf.sql organizer
 
-# 70_sec grants and row access (702 always runs after 50_sem: CREATE OR REPLACE VIEW drops row policies)
-run_sql sql/70_sec/701_grants.sql organizer
+# Row access (702 always runs after 50_sem: CREATE OR REPLACE VIEW drops row policies)
 run_sql sql/70_sec/702_row_access.sql
 
 # Streamlit apps, then app usage grants

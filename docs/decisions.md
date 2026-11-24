@@ -56,3 +56,7 @@ they are measured, never estimated.
   the caller); `SR_UI` gets `SELECT` on `OPS.NOTIFY_LOG` (the Brief page's "emailed" chip). The email integration's
   allowed recipients are mirrored into the setting `NOTIFY_ALLOWED` by `603_notifications.sql`, because the admin
   app may not run `DESCRIBE INTEGRATION` to validate `NOTIFY_EMAILS` (L11).
+- **B11 Grants deploy before 60_ops (SR-054).** The L2 order ran `70_sec/701` after `60_ops`, but on a first deploy
+  `SR_APP` then has no `CREATE TASK/STREAM/ALERT` yet and `SR_UI` does not exist for the grants in `606`. The
+  deploy now runs `701` right after `50_sem` (every object it grants on exists by then), then `60_ops`, then `702`.
+  The grants on `OPS.V_RUN_COST`, `V_HEALTH_LATEST` and `COST_DAILY` live in `606`, next to the objects.

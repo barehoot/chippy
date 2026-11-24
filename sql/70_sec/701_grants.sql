@@ -1,4 +1,4 @@
--- SR-056 · L12 grants. Analysts and judges never touch a table: they reach data only through the read-only app,
+-- SR-056 · L12 grants. Deployed after 50_sem and BEFORE 60_ops (B11). Analysts and judges never touch a table: they reach data only through the read-only app,
 -- the semantic view and the tool procedures. Builders and the pipeline use roles viewers cannot assume.
 -- ORGANIZERS: blocks 1-3 need SECURITYADMIN, ACCOUNTADMIN and SYSADMIN. If the team lacks them, hand those three
 -- blocks to the organizers and run blocks 4-7 as SR_ADMIN. Each ON ALL grant has its ON FUTURE twin.
@@ -91,7 +91,7 @@ GRANT SELECT ON TABLE SR_DB.OPS.COCO_LOG       TO ROLE SR_UI;
 GRANT SELECT ON TABLE SR_DB.OPS.SETTINGS       TO ROLE SR_UI;
 GRANT SELECT ON TABLE SR_DB.OPS.TEST_RESULT    TO ROLE SR_UI;
 GRANT SELECT ON TABLE SR_DB.OPS.NOTIFY_LOG     TO ROLE SR_UI;              -- Brief page: "emailed" chip
-GRANT SELECT ON VIEW  SR_DB.OPS.V_RUN_COST     TO ROLE SR_UI;              -- created in 60_ops/606
+-- V_RUN_COST, V_HEALTH_LATEST and COST_DAILY are granted to SR_UI in 60_ops/606, where they are created (B11)
 GRANT USAGE ON PROCEDURE SR_DB.APP.SP_WHAT_IF(VARCHAR, VARCHAR, VARCHAR) TO ROLE SR_UI;
 GRANT CREATE STREAMLIT, CREATE STAGE ON SCHEMA SR_DB.APP TO ROLE SR_UI;
 
