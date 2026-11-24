@@ -1,0 +1,20 @@
+-- T-DET-02 (SR-020): Z_SCORE is NULL for every L52W_VS_YA candidate, and not NULL for other comparisons where
+-- the brand has at least 70 weeks of history in the market.
+SET TEST_ID = 'T-DET-02';
+INSERT INTO SR_DB.OPS.TEST_RESULT (TEST_RUN_ID, TEST_ID, PASSED, FAILURES, DETAIL)
+-- hist: weeks of history per brand and market
+WITH hist AS (
+  SELECT MARKET_ID, CATEGORY, BRAND, COUNT(DISTINCT WEEK_END_DATE) AS N_WEEKS
+  FROM SR_DB.CORE.DT_SHARE_WEEK GROUP BY MARKET_ID, CATEGORY, BRAND
+),
+failures AS (
+  SELECT sc.SHIFT_ID, sc.CMP_CODE, sc.MARKET_ID, sc.BRAND, sc.Z_SCORE, h.N_WEEKS
+  FROM SR_DB.APP.SHIFT_CANDIDATE sc
+  LEFT JOIN hist h ON h.MARKET_ID = sc.MARKET_ID AND h.CATEGORY = sc.CATEGORY AND h.BRAND = sc.BRAND
+  WHERE sc.RUN_ID = $RUN_UNDER_TEST
+    AND ((sc.CMP_CODE = 'L52W_VS_YA' AND sc.Z_SCORE IS NOT NULL)
+      OR (sc.CMP_CODE <> 'L52W_VS_YA' AND h.N_WEEKS >= 70 AND sc.Z_SCORE IS NULL))
+)
+SELECT $TEST_RUN_ID, $TEST_ID, COUNT(*) = 0, COUNT(*),
+       (SELECT ARRAY_AGG(OBJECT_CONSTRUCT(*)) FROM (SELECT * FROM failures LIMIT 20))
+FROM failures;
