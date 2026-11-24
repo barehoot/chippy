@@ -20,3 +20,4 @@
 | 2026-11-24T09:35:50+00:00 | SR-029 | claude-code | manual | 3 | 115 | T-WI-01 | no | SR-029: what-if procedure, T-WI-01 |
 | 2026-11-24T09:36:22+00:00 | SR-028 | claude-code | manual | 4 | 108 | T-EW-02 | no | SR-028: stretch: anomaly detection on lever series, T-EW-02 |
 | 2026-11-24T09:41:19+00:00 | SR-030 | claude-code | manual | 5 | 369 | T-FP-01, test_factpack | no | SR-030: fact pack builder, T-FP-01 |
+| 2026-11-24T09:41:20+00:00 | SR-032 | claude-code | manual | 7 | 519 | test_fallback, test_render, test_validator | no | SR-032: validator, renderer and template fallback, T-NAR-01..03 and 05 |
