@@ -52,3 +52,7 @@ they are measured, never estimated.
 - **B09 `SEM.V_TOOL_BRIDGE.IN_SCOPE` (SR-040).** Tool procedures may read only `SEM.V_TOOL_*` views, and none of the
   L12 views says which markets the artefact gate checks. The added boolean column lets `TOOL_CHECK_ARTEFACT` answer
   `NOT_CHECKED` outside the scope (L10) and lets `TOOL_GET_SHARE_BRIDGE` report the same. Additive; no rename.
+- **B10 Grants L12 left implicit (SR-056).** `SR_ANALYST` gets `USAGE` on `APP.SP_RESOLVE` (every tool calls it as
+  the caller); `SR_UI` gets `SELECT` on `OPS.NOTIFY_LOG` (the Brief page's "emailed" chip). The email integration's
+  allowed recipients are mirrored into the setting `NOTIFY_ALLOWED` by `603_notifications.sql`, because the admin
+  app may not run `DESCRIBE INTEGRATION` to validate `NOTIFY_EMAILS` (L11).
