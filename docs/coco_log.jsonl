@@ -1,0 +1,1 @@
+{"logged_at": "2026-11-24T09:19:03+00:00", "ticket": "SR-001", "surface": "claude-code", "event": "manual", "files": [], "lines_added": 0, "tests": [], "human_edits": false, "note": "SR-001 repo check: 5 skills, reviewer, Stop hook present; L2 tree; pytest.ini"}
