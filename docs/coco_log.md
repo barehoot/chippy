@@ -14,3 +14,4 @@
 | 2026-11-24T09:30:38+00:00 | SR-022 | claude-code | manual | 10 | 491 | T-BR-01, T-BR-03, T-BR-04, test_bridge | no | SR-022: exact LMDI share bridge (SQL view + procedure), Python mirror, T-BR-01..05 |
 | 2026-11-24T09:32:36+00:00 | SR-024 | claude-code | manual | 7 | 371 | T-ART-01, T-ART-02, T-ART-03, T-ART-04 | no | SR-024: artefact gate R1-R6 with evidence, snapshot hashes, T-ART-01..04 |
 | 2026-11-24T09:33:23+00:00 | SR-026 | claude-code | manual | 4 | 164 | T-RANK-01 | no | SR-026: materiality score, ranking and suppression, T-RANK-01 |
+| 2026-11-24T09:34:13+00:00 | SR-023 | claude-code | manual | 5 | 180 | T-WH-01, T-WH-02 | no | SR-023: exact retailer split and TOP_INSIGHTS, T-WH-01..02 |
