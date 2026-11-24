@@ -1,0 +1,98 @@
+-- SR-040 · L10 semantic-layer views and L12 tool views. Analysts and the agent read only these SEM views; each
+-- carries the row access policy, attached by sql/70_sec/702_row_access.sql. CREATE OR REPLACE VIEW drops a
+-- policy, so 702 must rerun after this file (deploy_all.sh does; T-SEC-03 checks).
+USE ROLE SR_DEV;
+
+-- Share grid with market names, for Cortex Analyst
+CREATE OR REPLACE VIEW SR_DB.SEM.V_SEM_SHARE_GRID
+COMMENT = 'Brand value and distribution share by market and reporting period, as of the latest data week'
+AS
+SELECT g.PERIOD_CODE, g.AS_OF_WEEK, g.MARKET_ID, m.MARKET_NAME, m.MARKET_LEVEL, g.CATEGORY, g.MANUFACTURER, g.BRAND,
+       g.VALUE_SALES, g.CAT_VALUE_SALES, g.TDP_SUM, g.CAT_TDP_SUM,
+       g.VALUE_SHARE, g.VOLUME_SHARE, g.DIST_SHARE, g.PRICE_INDEX
+FROM SR_DB.CORE.V_SHARE_GRID g
+JOIN SR_DB.SRC.V_SRC_MARKET m ON m.MARKET_ID = g.MARKET_ID;
+
+-- Share change with its bridge and the latest brief's artefact label, for Cortex Analyst
+CREATE OR REPLACE VIEW SR_DB.SEM.V_SEM_SHARE_CHANGE
+COMMENT = 'Share change between two periods with its exact driver bridge and data-artefact label'
+AS
+WITH latest AS (
+  SELECT RUN_ID FROM SR_DB.OPS.RUN_LOG WHERE STATUS = 'SUCCEEDED' ORDER BY STARTED_AT DESC LIMIT 1
+)
+SELECT c.CMP_CODE, c.MARKET_ID, m.MARKET_NAME, c.CATEGORY, c.MANUFACTURER, c.BRAND,
+       100 * c.SH1                               AS SHARE_NOW_PCT,
+       100 * c.SH0                               AS SHARE_BEFORE_PCT,
+       100 * c.D_SHARE                           AS SHARE_CHANGE_PTS,
+       c.VALUE_AT_STAKE,
+       b.DIST_PTS                                AS BRIDGE_DIST_PTS,
+       b.VELOCITY_PTS                            AS BRIDGE_VELOCITY_PTS,
+       b.PRICE_PTS                               AS BRIDGE_PRICE_PTS,
+       b.PROMO_PTS                               AS BRIDGE_PROMO_PTS,
+       COALESCE(r.ARTEFACT_LABEL, 'MARKET_MOVE') AS ARTEFACT_LABEL,
+       COALESCE(r.SELECTED, FALSE)               AS IS_SELECTED
+FROM SR_DB.CORE.DT_SHARE_COMPARE c
+JOIN SR_DB.SRC.V_SRC_MARKET m ON m.MARKET_ID = c.MARKET_ID
+LEFT JOIN SR_DB.APP.V_BRIDGE_ALL b
+  ON b.CMP_CODE = c.CMP_CODE AND b.MARKET_ID = c.MARKET_ID AND b.CATEGORY = c.CATEGORY AND b.BRAND = c.BRAND
+ AND EQUAL_NULL(b.MANUFACTURER, c.MANUFACTURER)
+LEFT JOIN SR_DB.APP.SHIFT_RANKED r
+  ON r.RUN_ID = (SELECT RUN_ID FROM latest)
+ AND r.CMP_CODE = c.CMP_CODE AND r.MARKET_ID = c.MARKET_ID AND r.CATEGORY = c.CATEGORY AND r.BRAND = c.BRAND;
+
+-- Tool views (L12): the tool procedures read only these.
+CREATE OR REPLACE VIEW SR_DB.SEM.V_TOOL_BRIDGE            -- every brand, not only ranked shifts
+COMMENT = 'Bridge for every brand, market and comparison; IN_SCOPE marks markets the artefact gate checks (B09)'
+AS
+SELECT c.AS_OF_WEEK, c.CMP_CODE, c.MARKET_ID, m.MARKET_NAME, c.CATEGORY, c.MANUFACTURER, c.BRAND,
+       b.MODE, b.STATUS, b.SH1, b.SH0, b.D_SHARE, b.DIST_PTS, b.VELOCITY_PTS, b.PRICE_PTS, b.PROMO_PTS,
+       b.DS1, b.DS0, b.PRI1, b.PRI0,
+       (m.MARKET_ID = s.PARENT OR m.PARENT_MARKET_ID = s.PARENT) AS IN_SCOPE
+FROM SR_DB.CORE.DT_SHARE_COMPARE c
+JOIN SR_DB.APP.V_BRIDGE_ALL b
+  ON b.CMP_CODE = c.CMP_CODE AND b.MARKET_ID = c.MARKET_ID AND b.CATEGORY = c.CATEGORY AND b.BRAND = c.BRAND
+ AND EQUAL_NULL(b.MANUFACTURER, c.MANUFACTURER)
+JOIN SR_DB.SRC.V_SRC_MARKET m ON m.MARKET_ID = c.MARKET_ID
+CROSS JOIN (SELECT SETTING_VALUE::VARCHAR AS PARENT FROM SR_DB.OPS.SETTINGS WHERE SETTING_KEY = 'SCOPE_PARENT_MARKET') s;
+
+CREATE OR REPLACE VIEW SR_DB.SEM.V_TOOL_WHERE             -- retailer split exists for ranked shifts only
+COMMENT = 'Exact retailer contributions of the latest successful run''s selected shifts'
+AS
+SELECT r.CMP_CODE, r.MARKET_ID, r.CATEGORY, r.BRAND, w.METHOD, w.RANK_NO, w.CONTRIBUTOR, w.PERF_PTS, w.MIX_PTS, w.TOTAL_PTS
+FROM SR_DB.APP.SHIFT_WHERE w
+JOIN SR_DB.APP.SHIFT_RANKED r ON r.RUN_ID = w.RUN_ID AND r.SHIFT_ID = w.SHIFT_ID
+WHERE w.RUN_ID = (SELECT RUN_ID FROM SR_DB.OPS.RUN_LOG WHERE STATUS = 'SUCCEEDED' ORDER BY STARTED_AT DESC LIMIT 1);
+
+CREATE OR REPLACE VIEW SR_DB.SEM.V_TOOL_ARTEFACT
+COMMENT = 'Artefact rule hits of the latest successful run, with evidence'
+AS
+SELECT a.CMP_CODE, a.MARKET_ID, m.MARKET_NAME, a.CATEGORY, a.BRAND, a.RULE_ID, a.SEVERITY, a.EVIDENCE
+FROM SR_DB.APP.ARTEFACT_CHECK a
+JOIN SR_DB.SRC.V_SRC_MARKET m ON m.MARKET_ID = a.MARKET_ID
+WHERE a.RUN_ID = (SELECT RUN_ID FROM SR_DB.OPS.RUN_LOG WHERE STATUS = 'SUCCEEDED' ORDER BY STARTED_AT DESC LIMIT 1);
+
+CREATE OR REPLACE VIEW SR_DB.SEM.V_TOOL_FLOW              -- same allocation as SP_FLOW, for every market
+COMMENT = 'Proportional share-flow allocation for every market and comparison'
+AS
+WITH d AS (
+  SELECT CMP_CODE, MARKET_ID, CATEGORY, BRAND, SUM(D_SHARE) AS D_SHARE
+  FROM SR_DB.CORE.DT_SHARE_COMPARE WHERE D_SHARE IS NOT NULL
+  GROUP BY CMP_CODE, MARKET_ID, CATEGORY, BRAND
+), g AS (
+  SELECT CMP_CODE, MARKET_ID, CATEGORY, SUM(IFF(D_SHARE > 0, D_SHARE, 0)) AS GAIN_TOTAL FROM d GROUP BY CMP_CODE, MARKET_ID, CATEGORY
+)
+SELECT l.CMP_CODE, l.MARKET_ID, l.CATEGORY, l.BRAND AS FROM_BRAND, w.BRAND AS TO_BRAND,
+       100 * (-l.D_SHARE) * w.D_SHARE / NULLIF(g.GAIN_TOTAL, 0) AS FLOW_PTS
+FROM d l
+JOIN d w ON w.CMP_CODE = l.CMP_CODE AND w.MARKET_ID = l.MARKET_ID AND w.CATEGORY = l.CATEGORY AND w.D_SHARE > 0
+JOIN g   ON g.CMP_CODE = l.CMP_CODE AND g.MARKET_ID = l.MARKET_ID AND g.CATEGORY = l.CATEGORY
+WHERE l.D_SHARE < 0 AND g.GAIN_TOTAL > 0;
+
+CREATE OR REPLACE VIEW SR_DB.SEM.V_TOOL_BRIEF
+COMMENT = 'Published briefs with their fact packs; MARKET_ID is the scope parent market'
+AS
+SELECT b.BRIEF_ID, SPLIT_PART(b.SCOPE_KEY, '|', 1) AS CATEGORY, SPLIT_PART(b.SCOPE_KEY, '|', 2) AS MARKET_ID,
+       b.SCOPE_KEY, b.AS_OF_WEEK, b.HEADLINE, b.BODY_MD, p.PACK, b.PUBLISHED_AT
+FROM SR_DB.APP.BRIEF b
+JOIN SR_DB.APP.FACT_PACK p ON p.BRIEF_ID = b.BRIEF_ID
+WHERE b.STATUS = 'PUBLISHED';

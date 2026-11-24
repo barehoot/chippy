@@ -24,3 +24,4 @@
 | 2026-11-24T09:45:05+00:00 | SR-031 | claude-code | manual | 5 | 448 | - | no | SR-031: brief writer: prompt, structured output, SP_WRITE_BRIEF, zip-and-PUT deploy |
 | 2026-11-24T09:45:05+00:00 | SR-033 | claude-code | manual | 7 | 416 | T-E2E-01, T-E2E-02, T-E2E-04, T-NAR-04, test_run | no | SR-033: orchestrator SP_RUN_WEEK, step logs, query tags, T-E2E-01/02/04, T-NAR-04 |
 | 2026-11-24T09:46:32+00:00 | SR-053 | claude-code | manual | 7 | 255 | T-ART-05, T-E2E-03, T-RANK-02 | no | SR-053: stream, triggered task, replay and reset, T-E2E-03, T-ART-05, T-RANK-02 |
+| 2026-11-24T09:47:32+00:00 | SR-040 | claude-code | manual | 4 | 158 | - | no | SR-040: semantic-layer views, tool views and the SV_SHARE semantic view |

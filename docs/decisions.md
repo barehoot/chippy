@@ -49,3 +49,6 @@ they are measured, never estimated.
   `SP_RUN_FROM_STREAM`, `SP_REPLAY_NEXT_WEEK`, `SP_REPLAY_RESET` and `SP_NOTIFY_NEW_BRIEFS` are created as
   `SR_DEV` (caller's rights, so ownership does not change what they can do); streams, tasks and alerts are
   created as `SR_APP`, so they run as `SR_APP`.
+- **B09 `SEM.V_TOOL_BRIDGE.IN_SCOPE` (SR-040).** Tool procedures may read only `SEM.V_TOOL_*` views, and none of the
+  L12 views says which markets the artefact gate checks. The added boolean column lets `TOOL_CHECK_ARTEFACT` answer
+  `NOT_CHECKED` outside the scope (L10) and lets `TOOL_GET_SHARE_BRIDGE` report the same. Additive; no rename.
