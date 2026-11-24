@@ -18,3 +18,4 @@
 | 2026-11-24T09:34:37+00:00 | SR-025 | claude-code | manual | 4 | 89 | T-FLOW-01, T-FLOW-02 | no | SR-025: share flow (who took it), T-FLOW-01..02 |
 | 2026-11-24T09:35:50+00:00 | SR-027 | claude-code | manual | 3 | 112 | T-EW-01 | no | SR-027: early warning: mechanical distribution projection and price rise, T-EW-01 |
 | 2026-11-24T09:35:50+00:00 | SR-029 | claude-code | manual | 3 | 115 | T-WI-01 | no | SR-029: what-if procedure, T-WI-01 |
+| 2026-11-24T09:36:22+00:00 | SR-028 | claude-code | manual | 4 | 108 | T-EW-02 | no | SR-028: stretch: anomaly detection on lever series, T-EW-02 |

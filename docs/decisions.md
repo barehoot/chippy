@@ -37,3 +37,6 @@ they are measured, never estimated.
   carry the reason "Another comparison of this brand and market ranks higher". Without it, "L4W vs YA" and
   "L12W vs YA" for the same brand can take two of the five brief slots. Remove the `BEST_CMP` term in
   `406_sp_rank.sql` to undo.
+- **B06 Lever-model verdicts are stored (SR-028, stretch).** `SP_ML_LEVER_ANOMALY` keeps each scored latest week
+  in the new table `ML.AD_LEVERS_RESULT`, so T-EW-02 can check `ML_CONFIRMED` against what the model said. It runs
+  as an optional, cost-capped step `EW_ML` (step 11) after `EARLY_WARNING`.
