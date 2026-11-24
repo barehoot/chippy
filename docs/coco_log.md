@@ -16,3 +16,4 @@
 | 2026-11-24T09:33:23+00:00 | SR-026 | claude-code | manual | 4 | 164 | T-RANK-01 | no | SR-026: materiality score, ranking and suppression, T-RANK-01 |
 | 2026-11-24T09:34:13+00:00 | SR-023 | claude-code | manual | 5 | 180 | T-WH-01, T-WH-02 | no | SR-023: exact retailer split and TOP_INSIGHTS, T-WH-01..02 |
 | 2026-11-24T09:34:37+00:00 | SR-025 | claude-code | manual | 4 | 89 | T-FLOW-01, T-FLOW-02 | no | SR-025: share flow (who took it), T-FLOW-01..02 |
+| 2026-11-24T09:35:50+00:00 | SR-027 | claude-code | manual | 3 | 112 | T-EW-01 | no | SR-027: early warning: mechanical distribution projection and price rise, T-EW-01 |
