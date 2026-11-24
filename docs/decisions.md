@@ -19,3 +19,8 @@ they are measured, never estimated.
 
 ## Build decisions
 
+- **B01 Settings rerun safety (SR-002).** `002_settings.sql` overwrites a stored value only while it still holds a
+  `<placeholder>`; otherwise a rerun only refreshes the description. The LLD version reset every value on rerun,
+  which would put `AS_OF_WEEK_END` back to `"<yyyy-mm-dd>"` and break every dynamic table on the next deploy.
+- **B02 Two new threshold keys (SR-024).** `ART_RESTATE_PCT` (R3's "1%") and `ART_RECODE_MIN_SHARE` (R4's "20%")
+  are settings rather than literals, per AGENTS.md rule 4. The 13-week window in R5 stays a structural constant.
