@@ -1,0 +1,72 @@
+-- SR-053 · L9 replay control (D8): real NIQ weeks replayed in order. Moving AS_OF_WEEK_END changes what the
+-- adapter shows; refreshing the leaf dynamic tables makes the stream fire, and the triggered task runs the week.
+-- Both procedures return BUSY while a run younger than 30 minutes is RUNNING (E16).
+USE ROLE SR_DEV;
+CREATE OR REPLACE PROCEDURE SR_DB.APP.SP_REPLAY_NEXT_WEEK()
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS
+$$
+DECLARE
+  cur_wk    DATE;
+  next_wk   DATE;
+  n_running NUMBER DEFAULT 0;
+BEGIN
+  SELECT COUNT(*) INTO :n_running FROM SR_DB.OPS.RUN_LOG
+   WHERE STATUS = 'RUNNING' AND STARTED_AT > DATEADD(minute, -30, CURRENT_TIMESTAMP());
+  IF (n_running > 0) THEN
+    RETURN 'BUSY';                                   -- never move the week under a running run
+  END IF;
+  SELECT SETTING_VALUE::VARCHAR::DATE INTO :cur_wk FROM SR_DB.OPS.SETTINGS WHERE SETTING_KEY = 'AS_OF_WEEK_END';
+  SELECT MIN(WEEK_END_DATE) INTO :next_wk FROM SR_DB.SRC.V_SRC_FACT_WEEKLY_ALL WHERE WEEK_END_DATE > :cur_wk;
+  IF (next_wk IS NULL) THEN
+    RETURN 'NO_MORE_WEEKS';
+  END IF;
+  UPDATE SR_DB.OPS.SETTINGS
+     SET SETTING_VALUE = TO_VARIANT(TO_CHAR(:next_wk, 'YYYY-MM-DD')), UPDATED_AT = CURRENT_TIMESTAMP()
+   WHERE SETTING_KEY = 'AS_OF_WEEK_END';
+  ALTER DYNAMIC TABLE SR_DB.CORE.DT_SHARE_COMPARE REFRESH;   -- refreshes upstream dynamic tables as needed
+  ALTER DYNAMIC TABLE SR_DB.CORE.DT_SHARE_WEEK REFRESH;
+  RETURN 'AS_OF=' || TO_CHAR(:next_wk, 'YYYY-MM-DD');
+END;
+$$;
+
+-- Rehearsals: set AS_OF_WEEK_END back (or forward) to a week that exists in the data.
+CREATE OR REPLACE PROCEDURE SR_DB.APP.SP_REPLAY_RESET(P_WEEK VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS
+$$
+DECLARE
+  wk        DATE;
+  n_running NUMBER DEFAULT 0;
+  n_week    NUMBER DEFAULT 0;
+BEGIN
+  SELECT COUNT(*) INTO :n_running FROM SR_DB.OPS.RUN_LOG
+   WHERE STATUS = 'RUNNING' AND STARTED_AT > DATEADD(minute, -30, CURRENT_TIMESTAMP());
+  IF (n_running > 0) THEN
+    RETURN 'BUSY';
+  END IF;
+  wk := TRY_TO_DATE(P_WEEK);
+  SELECT COUNT(*) INTO :n_week FROM (SELECT 1 FROM SR_DB.SRC.V_SRC_FACT_WEEKLY_ALL WHERE WEEK_END_DATE = :wk LIMIT 1);
+  IF (wk IS NULL OR n_week = 0) THEN
+    RETURN 'NOT_A_DATA_WEEK: ' || COALESCE(P_WEEK, 'NULL');
+  END IF;
+  UPDATE SR_DB.OPS.SETTINGS
+     SET SETTING_VALUE = TO_VARIANT(TO_CHAR(:wk, 'YYYY-MM-DD')), UPDATED_AT = CURRENT_TIMESTAMP()
+   WHERE SETTING_KEY = 'AS_OF_WEEK_END';
+  ALTER DYNAMIC TABLE SR_DB.CORE.DT_SHARE_COMPARE REFRESH;
+  ALTER DYNAMIC TABLE SR_DB.CORE.DT_SHARE_WEEK REFRESH;
+  RETURN 'AS_OF=' || TO_CHAR(:wk, 'YYYY-MM-DD');
+END;
+$$;
+
+USE ROLE SR_APP;
+-- No schedule: runs only when the admin app executes it ("Load next week")
+CREATE OR REPLACE TASK SR_DB.OPS.T_REPLAY_NEXT
+  WAREHOUSE = SR_WH_M
+  COMMENT = 'Admin app: load the next real data week'
+AS
+  CALL SR_DB.APP.SP_REPLAY_NEXT_WEEK();
