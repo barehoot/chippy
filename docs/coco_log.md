@@ -38,3 +38,4 @@
 | 2026-11-24T10:16:45+00:00 | SR-032 | claude-code | manual | 5 | 19 | - | no | SR-032: template brief wording, held-back list one line per brand and market |
 | 2026-11-24T10:16:45+00:00 | SR-061 | claude-code | manual | 10 | 722 | - | no | SR-061: local dry-run harness: the repository's SQL on DuckDB with synthetic data |
 | 2026-11-24T10:19:17+00:00 | SR-004 | claude-code | manual | 2 | 115 | - | no | SR-004: scope-choice queries, demo script and dry-run checklist |
+| 2026-11-24T10:19:17+00:00 | SR-063 | claude-code | manual | 2 | 74 | - | no | SR-063: solution brief draft |
