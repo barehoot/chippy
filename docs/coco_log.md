@@ -19,3 +19,4 @@
 | 2026-11-24T09:35:50+00:00 | SR-027 | claude-code | manual | 3 | 112 | T-EW-01 | no | SR-027: early warning: mechanical distribution projection and price rise, T-EW-01 |
 | 2026-11-24T09:35:50+00:00 | SR-029 | claude-code | manual | 3 | 115 | T-WI-01 | no | SR-029: what-if procedure, T-WI-01 |
 | 2026-11-24T09:36:22+00:00 | SR-028 | claude-code | manual | 4 | 108 | T-EW-02 | no | SR-028: stretch: anomaly detection on lever series, T-EW-02 |
+| 2026-11-24T09:41:19+00:00 | SR-030 | claude-code | manual | 5 | 369 | T-FP-01, test_factpack | no | SR-030: fact pack builder, T-FP-01 |
