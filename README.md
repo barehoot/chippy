@@ -1,103 +1,102 @@
-# Share Radar starter kit
+# Share Radar
 
-Everything a coding agent needs to build Share Radar one ticket at a time: the design (HLD, LLD, tests), the agent rules, five skills, a reviewer subagent, a session-log hook and 41 tickets with ready-to-paste prompts. It works with Claude Code, the CoCo CLI and CoCo in Snowsight.
+Share Radar turns every new NIQ retail-measurement week into a ranked, explained and verified competitive share brief
+within minutes, entirely inside Snowflake. It detects material share shifts, splits each one exactly into
+distribution, velocity, price and promo, checks whether it could be a data artefact, publishes a numbers-locked brief
+by email, and answers follow-up questions through a Cortex Agent in CoWork.
 
-## What is inside
+Design: [docs/HLD.md](docs/HLD.md) (what and why) · [docs/LLD.md](docs/LLD.md) (the build contract, L1–L14) ·
+[docs/TESTS_AND_COCO.md](docs/TESTS_AND_COCO.md) (tests T1–T7) · [docs/TICKETS.md](docs/TICKETS.md) ·
+[docs/decisions.md](docs/decisions.md) (decisions taken while building, B01–B13) ·
+[docs/demo_script.md](docs/demo_script.md) · [docs/solution_brief.md](docs/solution_brief.md) (draft).
 
-```text
-share-radar/
-├── README.md                  # this file
-├── AGENTS.md                  # project rules every agent session loads (T4)
-├── CLAUDE.md                  # Claude Code entry point; imports AGENTS.md
-├── .sr_ticket                 # current ticket ID (starts at SR-001)
-├── .gitignore                 # keeps .snowflake/, keys and .env out of Git
-├── docs/
-│   ├── HLD.md                 # what and why, architecture, weekly run, agent, decisions, tickets, risks
-│   ├── LLD.md                 # L1–L14: names, DDL, procedures, ML, brief, orchestration, agent, app, security, errors, cost
-│   ├── TESTS_AND_COCO.md      # T1–T7: test harness, named tests, golden set, rules, skills, reviewer, hook, prompts
-│   ├── TICKETS.md             # every ticket in build order, with "done when" and its prompt
-│   ├── img/                   # architecture, weekly run and timeline diagrams (SVG)
-│   └── reference/Share_Radar_Design.html   # the same design as one page, for people
-├── .cortex/                   # for CoCo: skills, sr-reviewer subagent, Stop hook
-├── .claude/                   # for Claude Code: the same skills, subagent and Stop hook
-└── scripts/coco_log.py        # session log written by the Stop hook (T6)
-```
+## Status
 
-The agent creates everything else (sql/, python/, streamlit/, tests/, eval/, kb/) ticket by ticket, exactly as laid out in LLD section L2.
+Every MVP and stretch ticket that a coding agent can do is written, with its tests; the ticket table in
+docs/HLD.md has the status of each. What still needs the NIQ Snowflake account or a person:
 
-## Before you start (about 15 minutes)
+| Needs | Ticket | What to do |
+| --- | --- | --- |
+| The NIQ column mapping | SR-003 | Explore the NIQ schema, fill the L3 worksheet in `sql/10_src/101_adapter_views.sql`, approve it |
+| The demo scope | SR-004 | Run the queries in docs/demo_script.md §1; fill the placeholders in `002_settings.sql` |
+| Five NIQ reference numbers | SR-013 | Insert them with the template in `eval/reconcile.sql`, run it, then T-CORE-03 |
+| Organizer privileges | SR-002, 043, 054, 056 | Account-level blocks are marked `ORGANIZERS`; `deploy_all.sh` lists any that failed |
+| Real names in the golden set | SR-044 | `python3 eval/run_eval.py --propose`, review the 30 questions, commit |
+| Timings, video, submission | SR-060, 062, 064 | People |
 
-1. **Make it a Git repository.** The session log and the reviewer both read `git diff`.
+Verified here without the account: `pytest -q` runs 152 tests: unit tests for the bridge, validator, renderer,
+fallback, fact pack, orchestration failure matrix, golden-set scoring and app formatting; every page of both
+Streamlit apps run headless; and the repository's own SQL run on DuckDB against synthetic data (16 of the project's
+SQL tests pass as written, and the SQL bridge equals its Python mirror on every row).
 
-   ```bash
-   cd share-radar
-   git init && git add . && git commit -m "SR-000: starter kit"
-   ```
-
-2. **Install the Snowflake CLI and add the `sr` connection.** Every command in AGENTS.md uses it.
-
-   ```bash
-   pip install snowflake-cli
-   ```
-
-   Add this to `~/.snowflake/config.toml`. It goes in your home folder, never in the repository, and it holds no password:
-
-   ```toml
-   [connections.sr]
-   account = "<orgname>-<accountname>"
-   user = "<your Snowflake user>"
-   authenticator = "externalbrowser"
-   role = "<the role you were given, or ACCOUNTADMIN on your own trial account>"
-   warehouse = "<any warehouse you can use>"
-   ```
-
-   Check it with `snow connection test -c sr`. After SR-002 has created them, change `role` to `SR_DEV` and `warehouse` to `SR_WH_XS`. If the organisers already created roles and warehouses, LLD section L1 says how to map the `SR_*` roles to yours.
-
-3. **Check that the AI features work.** SR-002 runs `sql/00_setup/009_feature_smoke_test.sql`. Fix anything it reports as failing before you start SR-003; assumptions A5 and A6 in the HLD list the fallbacks.
-
-## Open the kit in your agent
-
-| Agent | How to start | What it reads | Plan first |
-| --- | --- | --- | --- |
-| Claude Code | run `claude` in the folder | CLAUDE.md (which imports AGENTS.md) and `.claude/` | press Shift+Tab until plan mode is on, then paste the prompt |
-| CoCo CLI | run `cortex` in the folder | AGENTS.md and `.cortex/` | start the prompt with `/plan` |
-| CoCo in Snowsight | Workspaces → upload the folder → CoCo icon | AGENTS.md at the workspace root | end the prompt with "Show me a plan first and wait for my approval." |
-
-**CoCo in Snowsight:** skills only load once uploaded through the CoCo panel. Click **+ → Upload Skill Folder(s)** and add each folder in `.cortex/skills/`. Hooks may not fire there, so record that work later from a laptop with `python3 scripts/coco_log.py --event manual --surface snowsight --note "<ticket and what was built>"`.
-
-**If the sprint rules require CoCo,** run the build tickets in CoCo. The same files work in both agents, and the session log records which one did each ticket.
-
-## First session
-
-Paste this first, so the agent orients itself before it writes anything:
-
-```text
-Read AGENTS.md, docs/HLD.md and docs/TICKETS.md. Do not write any files yet. In at most 10 lines, tell me what we are building, the build order, and which of the HLD assumptions A1 to A8 you need me to confirm before SR-003.
-```
-
-Then start the ticket loop:
+## Quick start (no Snowflake needed)
 
 ```bash
-echo SR-001 > .sr_ticket
+pip install pytest pandas altair streamlit duckdb sqlglot snowflake-snowpark-python
+pytest -q                                   # unit, page and local SQL tests (about 30 seconds)
+python3 tests/local/run_local.py            # pipeline on synthetic data; writes tests/local/out/synthetic_brief.html
 ```
 
-Paste the SR-001 prompt from `docs/TICKETS.md`, approve the plan, and continue with SR-002, SR-003 and so on in the order that file gives. The loop for each ticket is at the top of `docs/TICKETS.md`.
+An example of that brief is in [docs/examples/synthetic_brief.html](docs/examples/synthetic_brief.html) (invented names).
 
-## What only a person can supply
+## Deploy to Snowflake
 
-- **SR-003:** the agent finds the NIQ databases and proposes a column mapping (the `<NIQ_...>` placeholders); you approve it before any view is written.
-- **SR-004:** the demo country, category, focus manufacturer and parent market.
-- **SR-013:** five reference numbers from an NIQ report, to reconcile the share grid.
-- **SR-044, SR-060, SR-062, SR-064:** golden-set answers, analyst timings, the video and the submission.
+1. Install the Snowflake CLI (`pip install snowflake-cli`) and add an `sr` connection to `~/.snowflake/config.toml`
+   (never to this repository). After the first deploy, use role `SR_DEV` and warehouse `SR_WH_XS`.
+2. Run the feature smoke test: `snow sql -f sql/00_setup/009_feature_smoke_test.sql -c sr`. Each failing line names
+   the HLD assumption (A5, A6) and its fallback.
+3. Fill the NIQ mapping (SR-003) and the scope settings (SR-004), as in the table above.
+4. Deploy everything in order: `scripts/deploy_all.sh` (`SKIP_APPS=1` for SQL only, `WITH_DMF=1` for SR-057). It
+   zips `python/sr_lib` to `@SR_DB.APP.CODE`, loads the knowledge base, deploys both Streamlit apps and flushes the
+   session log. Order: 00_setup → 10_src → 20_core → 40_app/401 → 30_ml → 40_app → 50_sem → 70_sec/701 → 60_ops →
+   70_sec/702 → apps → 70_sec/703 (701 moved before 60_ops: decision B11).
+5. First run: `snow sql -q "CALL SR_DB.APP.SP_RUN_WEEK('MANUAL', TRUE)" -c sr`, then
+   `snow sql -f tests/sql/run_all.sql -c sr` (set `RUN_E2E = TRUE` in that file before a gate) and
+   `python3 eval/run_eval.py --connection sr --load` (add `--tools-only` for a run without AI credits).
 
-## Rules that keep the build on track
+If the organizers provisioned their own roles, map each `SR_*` role to the team role: grant the team role to the
+`SR_*` roles, or replace the role names in `001_roles_wh_db.sql` and `701_grants.sql` before running them.
 
-- One ticket per session. The agent touches only that ticket's files.
-- Names in the LLD are final. If one looks wrong, the agent stops and asks.
-- A ticket is done when its named tests pass and `sr-reviewer` reports nothing BLOCKING.
-- The agent never edits a test to make it pass.
-- Credentials stay in `~/.snowflake/config.toml`, never in the repository.
+## Replaying a week
 
-## When the design changes
+The setting `AS_OF_WEEK_END` hides weeks after it (D8): real NIQ weeks replayed in order.
 
-Re-export the changed doc tab to the same file in `docs/` (HLD.md, LLD.md or TESTS_AND_COCO.md), commit it, and tell the agent which section changed.
+- **Load next week** in the admin app (`SR_DB.APP.SHARE_RADAR_ADMIN`), or `EXECUTE TASK SR_DB.OPS.T_REPLAY_NEXT`.
+  The week moves, the dynamic tables refresh, the stream wakes `OPS.T_RUN_WEEK`, the run publishes a brief, and the
+  alert emails it. The admin app shows progress step by step.
+- **Rerun this week**: `EXECUTE TASK SR_DB.OPS.T_RUN_WEEK_MANUAL`.
+- **Reset**: `CALL SR_DB.APP.SP_REPLAY_RESET('2026-10-10')`. Replay and reset return `BUSY` while a run is in progress.
+
+## Objects
+
+| Schema | Objects |
+| --- | --- |
+| `SRC` | `V_SRC_FACT_WEEKLY_ALL`, `V_SRC_FACT_WEEKLY` (replay filter), `V_SRC_PRODUCT`, `V_SRC_MARKET` (only file naming NIQ: 101) |
+| `CORE` | `DT_PERIOD_WEEK`, `DT_BRAND_WEEK`, `DT_CAT_WEEK`, `DT_BRAND_PERIOD`, `DT_CAT_PERIOD`, `DT_SHARE_COMPARE`, `DT_SHARE_WEEK`, `V_SHARE_GRID` |
+| `APP` | Result tables `SHIFT_CANDIDATE`, `SHARE_BRIDGE`, `ARTEFACT_CHECK`, `SHIFT_RANKED`, `SHIFT_WHERE`, `SHARE_FLOW`, `EARLY_WARNING`, `FACT_PACK`, `BRIEF`; view `V_BRIDGE_ALL`; steps `SP_CAPABILITY_CHECK`, `SP_SNAPSHOT`, `SP_DETECT_SHIFTS`, `SP_ML_SHARE_ANOMALY`, `SP_BRIDGE`, `SP_ARTEFACT`, `SP_RANK`, `SP_WHERE`, `SP_WHERE_INSIGHTS`, `SP_FLOW`, `SP_EARLY_WARNING`, `SP_ML_LEVER_ANOMALY`, `SP_BUILD_FACT_PACK`, `SP_WRITE_BRIEF`, `SP_RUN_WEEK`; `SP_WHAT_IF`, `SP_RESOLVE`, five `TOOL_*` procedures; replay and notification procedures; UI views `V_UI_SHARE_WEEK`, `V_ALIAS`; Streamlit `SHARE_RADAR`, `SHARE_RADAR_ADMIN`; stage `CODE` |
+| `ML` | `AD_SHARE_WEEKLY`, `TI_SHARE`, `AD_LEVERS`, `AD_LEVERS_PRICE`, `AD_LEVERS_RESULT` |
+| `SEM` | `V_SEM_SHARE_GRID`, `V_SEM_SHARE_CHANGE`, `V_TOOL_BRIDGE`, `V_TOOL_WHERE`, `V_TOOL_ARTEFACT`, `V_TOOL_FLOW`, `V_TOOL_BRIEF` (all row-filtered), semantic view `SV_SHARE`, search `CSS_METHOD`, agent `SHARE_RADAR_AGENT`, stage `SKILLS` |
+| `OPS` | `SETTINGS` + `CFG()`, `CAPABILITY`, `RUN_LOG`, `STEP_LOG`, `FACT_SNAPSHOT`, `NOTIFY_LOG`, `EVAL_RESULT`, `RECON_RESULT`, `TEST_RESULT`, `GOLDEN_SET`, `COCO_LOG`, `STREAM_CONSUMED`, `HEALTH_LOG`, `COST_DAILY`, `COST_RUN`, `ENTITLEMENT`, policy `RAP_ENTITLED`; stream `ST_SHARE_COMPARE`; tasks `T_RUN_WEEK`, `T_RUN_WEEK_MANUAL`, `T_REPLAY_NEXT`, `T_HEALTH`; alert `A_NEW_BRIEF`; `SP_HEALTH_CHECK`, `SP_COST_SNAPSHOT`, `SP_ENTITLE`; views `V_HEALTH_LATEST`, `V_RUN_COST` |
+| `KB`, `TEST` | `KB.METHOD_DOCS`; fixtures `FX_RECON_REFERENCE`, `FX_DEMO_EVENTS` |
+
+## Repository layout
+
+```text
+sql/            00_setup 10_src 20_core 30_ml 40_app 50_sem 60_ops 70_sec   (deploy order: see above)
+python/sr_lib/  run (orchestration, brief writer), bridge (test mirror), factpack, validator, render, fallback
+python/tests/   unit tests and Streamlit page smoke tests (cases.py holds hand-computed values)
+streamlit/      two apps from one codebase: streamlit_app.py (read-only), admin_app.py; pages/, sr_ui/
+tests/sql/      T-* SQL tests and run_all.sql (T1 format)
+tests/local/    the repository's SQL on DuckDB with synthetic data (harness.py, run_local.py)
+eval/           golden_set.csv, run_eval.py, run_eval.sql, reconcile.sql
+kb/             method documents for Cortex Search
+scripts/        deploy_all.sh, load_kb.py, coco_log.py
+docs/           design, decisions, demo script, solution brief, session log
+```
+
+## Building with a coding agent
+
+`AGENTS.md` holds the rules every session loads (CLAUDE.md imports it for Claude Code); the five skills, the
+`sr-reviewer` subagent and the Stop hook are in `.claude/` and `.cortex/`. One ticket per session: set
+`.sr_ticket`, paste the ticket's prompt from docs/TICKETS.md, approve the plan, let the agent build and test, ask
+`sr-reviewer` to review, then `python3 scripts/coco_log.py --event flush` and commit as `SR-0xx: <summary>`.
