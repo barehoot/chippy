@@ -24,3 +24,7 @@ they are measured, never estimated.
   which would put `AS_OF_WEEK_END` back to `"<yyyy-mm-dd>"` and break every dynamic table on the next deploy.
 - **B02 Two new threshold keys (SR-024).** `ART_RESTATE_PCT` (R3's "1%") and `ART_RECODE_MIN_SHARE` (R4's "20%")
   are settings rather than literals, per AGENTS.md rule 4. The 13-week window in R5 stays a structural constant.
+- **B03 Bridge residual is NULL when nothing was decomposed (SR-022).** In mode D, and for NEW, EXIT and NO_DATA
+  rows, `RESIDUAL_PTS` is NULL instead of `100 * D_SHARE`. The LLD formula made the residual equal the whole change
+  in mode D, which contradicts T-BR-01 ("every OK row has |residual| < 1e-6") on any account without %ACV. Found by
+  the randomised property test in `python/tests/test_bridge.py`.

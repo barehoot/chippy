@@ -11,3 +11,4 @@
 | 2026-11-24T09:24:04+00:00 | SR-013 | claude-code | manual | 3 | 88 | T-CORE-03 | no | SR-013: reconciliation query and T-CORE-03 (reference numbers pending) |
 | 2026-11-24T09:26:48+00:00 | SR-020 | claude-code | manual | 5 | 280 | T-DET-01, T-DET-02 | no | SR-020: L5 result tables, shift detector, T-DET-01..02 |
 | 2026-11-24T09:27:12+00:00 | SR-021 | claude-code | manual | 3 | 87 | T-ML-01 | no | SR-021: anomaly detection on weekly share, T-ML-01 |
+| 2026-11-24T09:30:38+00:00 | SR-022 | claude-code | manual | 10 | 491 | T-BR-01, T-BR-03, T-BR-04, test_bridge | no | SR-022: exact LMDI share bridge (SQL view + procedure), Python mirror, T-BR-01..05 |
