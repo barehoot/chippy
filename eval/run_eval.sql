@@ -1,0 +1,29 @@
+-- SR-044 · T3 golden-set table and report queries. run_eval.py --load runs the DDL part (above "-- REPORT").
+USE ROLE SR_DEV;
+CREATE TABLE IF NOT EXISTS SR_DB.OPS.GOLDEN_SET (
+  QUESTION_ID   VARCHAR(8)  NOT NULL PRIMARY KEY,
+  QTYPE         VARCHAR(8)  NOT NULL,
+  QUESTION      VARCHAR     NOT NULL,
+  EXPECTED_TOOL VARCHAR(32),
+  TOOL_ARGS     VARIANT,
+  EXPECTED_SQL  VARCHAR     NOT NULL,
+  CHECK_TYPE    VARCHAR(12) NOT NULL,   -- VALUE_PTS | VALUE_PCT | VALUE_MONEY | NAME | LABEL | PHRASE | REFUSE
+  TOLERANCE     FLOAT       NOT NULL DEFAULT 0
+)
+-- REPORT
+;
+-- Score of the latest evaluation
+SELECT COUNT_IF(PASSED) || '/' || COUNT(*) AS SCORE, MAX(EVALUATED_AT) AS AT, ANY_VALUE(EVAL_RUN_ID) AS EVAL_RUN_ID
+FROM SR_DB.OPS.EVAL_RESULT
+WHERE EVAL_RUN_ID = (SELECT EVAL_RUN_ID FROM SR_DB.OPS.EVAL_RESULT ORDER BY EVALUATED_AT DESC LIMIT 1);
+
+-- Failures of the latest evaluation, with the T3 triage hint
+SELECT e.QUESTION_ID, g.QTYPE, e.EXPECTED_TOOL, e.ACTUAL_TOOLS, e.EXPECTED, e.NOTE,
+       CASE WHEN STARTSWITH(e.NOTE, 'route') THEN 'Sharpen tool descriptions or orchestration instructions (L10)'
+            WHEN e.NOTE ILIKE 'tools-only%' THEN 'Bug in the tool or its SEM view'
+            ELSE 'Value right in the tool? Then fix the response instructions or the semantic view' END AS TRIAGE
+FROM SR_DB.OPS.EVAL_RESULT e
+LEFT JOIN SR_DB.OPS.GOLDEN_SET g ON g.QUESTION_ID = e.QUESTION_ID
+WHERE e.EVAL_RUN_ID = (SELECT EVAL_RUN_ID FROM SR_DB.OPS.EVAL_RESULT ORDER BY EVALUATED_AT DESC LIMIT 1)
+  AND NOT e.PASSED
+ORDER BY e.QUESTION_ID;
