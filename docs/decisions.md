@@ -40,3 +40,12 @@ they are measured, never estimated.
 - **B06 Lever-model verdicts are stored (SR-028, stretch).** `SP_ML_LEVER_ANOMALY` keeps each scored latest week
   in the new table `ML.AD_LEVERS_RESULT`, so T-EW-02 can check `ML_CONFIRMED` against what the model said. It runs
   as an optional, cost-capped step `EW_ML` (step 11) after `EARLY_WARNING`.
+- **B07 T-E2E-03 simulates the overlap (SR-053).** Snowflake does not run two executions of one task at the same
+  time; it skips the second. So "T_RUN_WEEK_MANUAL executed twice" cannot produce two runs. The test inserts a
+  RUNNING marker row, checks that `SP_RUN_WEEK` writes a SKIPPED/BUSY row and that `SP_REPLAY_NEXT_WEEK` returns
+  BUSY, then removes the marker. Replay-based E2E tests (T-ART-05, T-RANK-02) suspend `T_RUN_WEEK` while they
+  move the as-of week, so the triggered task cannot race them, and put the week back at the end.
+- **B08 Procedures in 60_ops are created as SR_DEV (SR-053).** L12 gives `SR_APP` no `CREATE PROCEDURE` on `APP`.
+  `SP_RUN_FROM_STREAM`, `SP_REPLAY_NEXT_WEEK`, `SP_REPLAY_RESET` and `SP_NOTIFY_NEW_BRIEFS` are created as
+  `SR_DEV` (caller's rights, so ownership does not change what they can do); streams, tasks and alerts are
+  created as `SR_APP`, so they run as `SR_APP`.
