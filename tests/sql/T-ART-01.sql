@@ -1,6 +1,6 @@
--- T-ART-01 (SR-024): every child market with category sales in one period and none in the other has an
--- R2_FEED row on its parent, and there are no other R2_FEED rows. Recomputed from the weekly table, not the
--- period table the procedure reads.
+-- T-ART-01 (SR-024): every child market with category sales in one period and none in the other, or with fewer
+-- weeks than its parent in either period (B12), has an R2_FEED row on its parent, and there are no other R2_FEED
+-- rows. Recomputed from the weekly table, not the period table the procedure reads.
 SET TEST_ID = 'T-ART-01';
 INSERT INTO SR_DB.OPS.TEST_RESULT (TEST_RUN_ID, TEST_ID, PASSED, FAILURES, DETAIL)
 -- cmp: comparisons and periods
@@ -13,18 +13,30 @@ kids AS (
   SELECT MARKET_ID, PARENT_MARKET_ID FROM SR_DB.SRC.V_SRC_MARKET
   WHERE PARENT_MARKET_ID = (SELECT SETTING_VALUE::VARCHAR FROM SR_DB.OPS.SETTINGS WHERE SETTING_KEY = 'SCOPE_PARENT_MARKET')
 ),
--- sales: each child's category sales per comparison side, from DT_CAT_WEEK
+-- side: each market's category sales and weeks per comparison side, from DT_CAT_WEEK
+side AS (
+  SELECT cmp.CMP_CODE, cw.MARKET_ID,
+         SUM(IFF(pw.PERIOD_CODE = cmp.CUR_P,  cw.VALUE_SALES, 0)) AS V1,
+         SUM(IFF(pw.PERIOD_CODE = cmp.BASE_P, cw.VALUE_SALES, 0)) AS V0,
+         COUNT(DISTINCT IFF(pw.PERIOD_CODE = cmp.CUR_P,  cw.WEEK_END_DATE, NULL)) AS W1,
+         COUNT(DISTINCT IFF(pw.PERIOD_CODE = cmp.BASE_P, cw.WEEK_END_DATE, NULL)) AS W0
+  FROM SR_DB.CORE.DT_CAT_WEEK cw
+  JOIN SR_DB.CORE.DT_PERIOD_WEEK pw ON pw.WEEK_END_DATE = cw.WEEK_END_DATE
+  JOIN cmp ON pw.PERIOD_CODE IN (cmp.CUR_P, cmp.BASE_P)
+  GROUP BY cmp.CMP_CODE, cw.MARKET_ID
+),
+-- sales: each child against its parent
 sales AS (
   SELECT cmp.CMP_CODE, k.MARKET_ID, k.PARENT_MARKET_ID,
-         COALESCE(SUM(IFF(pw.PERIOD_CODE = cmp.CUR_P,  cw.VALUE_SALES, 0)), 0) AS V1,
-         COALESCE(SUM(IFF(pw.PERIOD_CODE = cmp.BASE_P, cw.VALUE_SALES, 0)), 0) AS V0
+         COALESCE(c.V1, 0) AS V1, COALESCE(c.V0, 0) AS V0, COALESCE(c.W1, 0) AS W1, COALESCE(c.W0, 0) AS W0,
+         p.W1 AS PW1, p.W0 AS PW0
   FROM kids k CROSS JOIN cmp
-  LEFT JOIN SR_DB.CORE.DT_CAT_WEEK cw ON cw.MARKET_ID = k.MARKET_ID
-  LEFT JOIN SR_DB.CORE.DT_PERIOD_WEEK pw ON pw.WEEK_END_DATE = cw.WEEK_END_DATE AND pw.PERIOD_CODE IN (cmp.CUR_P, cmp.BASE_P)
-  GROUP BY cmp.CMP_CODE, k.MARKET_ID, k.PARENT_MARKET_ID
+  LEFT JOIN side c ON c.CMP_CODE = cmp.CMP_CODE AND c.MARKET_ID = k.MARKET_ID
+  LEFT JOIN side p ON p.CMP_CODE = cmp.CMP_CODE AND p.MARKET_ID = k.PARENT_MARKET_ID
 ),
 expected AS (
-  SELECT CMP_CODE, PARENT_MARKET_ID AS MARKET_ID, MARKET_ID AS CHILD_ID FROM sales WHERE (V1 = 0) <> (V0 = 0)
+  SELECT CMP_CODE, PARENT_MARKET_ID AS MARKET_ID, MARKET_ID AS CHILD_ID FROM sales
+  WHERE (V1 = 0) <> (V0 = 0) OR (V1 <> 0 AND V0 <> 0 AND (W1 < PW1 OR W0 < PW0))
 ),
 actual AS (
   SELECT CMP_CODE, MARKET_ID, EVIDENCE:child_market_id::VARCHAR AS CHILD_ID

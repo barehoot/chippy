@@ -36,7 +36,8 @@ they are measured, never estimated.
   several comparisons, only its highest-scoring one is eligible for selection; the others keep their rank and
   carry the reason "Another comparison of this brand and market ranks higher". Without it, "L4W vs YA" and
   "L12W vs YA" for the same brand can take two of the five brief slots. Remove the `BEST_CMP` term in
-  `406_sp_rank.sql` to undo.
+  `406_sp_rank.sql` to undo. The held-back list follows the same rule (one line per brand x market, its
+  highest-scoring comparison, named in the line), in the fact pack and on the Radar.
 - **B06 Lever-model verdicts are stored (SR-028, stretch).** `SP_ML_LEVER_ANOMALY` keeps each scored latest week
   in the new table `ML.AD_LEVERS_RESULT`, so T-EW-02 can check `ML_CONFIRMED` against what the model said. It runs
   as an optional, cost-capped step `EW_ML` (step 11) after `EARLY_WARNING`.
@@ -60,3 +61,12 @@ they are measured, never estimated.
   `SR_APP` then has no `CREATE TASK/STREAM/ALERT` yet and `SR_UI` does not exist for the grants in `606`. The
   deploy now runs `701` right after `50_sem` (every object it grants on exists by then), then `60_ops`, then `702`.
   The grants on `OPS.V_RUN_COST`, `V_HEALTH_LATEST` and `COST_DAILY` live in `606`, next to the objects.
+- **B12 R2_FEED also catches partial feed gaps (SR-024).** Found by the local harness: a retailer whose feed stops
+  for the last four weeks is absent from the L4W periods (R2 fires, the L4W shifts are held back), but present for
+  eight of the twelve L12W weeks, so the parent's L12W share moved for a data reason and still ranked first as a
+  "market move". R2 now also fires, HIGH, when a child market has fewer weeks than its parent in either period.
+  T-ART-01 recomputes the same definition. The rule list R1-R6 is unchanged.
+- **B13 Template wording (SR-032).** Found reading the locally generated brief: the headline read "Crunchy lost
+  -9.18 pts" (a double negative). The template headline is now sign-neutral ("Crunchy in MegaMart, -9.18 pts (last
+  four weeks vs the previous four)"), and when a shift has no retailer split (a retailer-level shift) the "why"
+  names the brand that took the most share, from the flow facts already in the pack.

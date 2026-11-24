@@ -6,7 +6,8 @@
 -- | Rule        | Level  | Fires when                                                                 | Severity |
 -- | R1_COVERAGE | market | store count moves >= ART_STORE_CHG (universe view), or proxy: category TDP | HIGH /   |
 -- |             |        | per week log-change >= ART_CAT_TDP_JUMP while value per TDP <= _SPPD_FLAT  | MEDIUM   |
--- | R2_FEED     | parent | a child market has category sales in one period and none in the other      | HIGH     |
+-- | R2_FEED     | parent | a child market has category sales in one period and none in the other, or  | HIGH     |
+-- |             |        | fewer weeks than its parent in either period (partial feed gap, B12)       |          |
 -- | R3_RESTATE  | market | a week's ROW_HASH differs from the previous successful run's snapshot      | HIGH if  |
 -- |             |        |                                                                            | >= ART_RESTATE_PCT |
 -- | R4_RECODE   | brand  | exiting and entering items' sales match within ART_RECODE_TOL, each        | MEDIUM   |
@@ -86,11 +87,14 @@ BEGIN
     n := n + SQLROWCOUNT;
   END IF;
 
-  -- R2_FEED: a child retailer present in one period and absent in the other, flagged on the parent
+  -- R2_FEED: a child retailer present in one period and absent in the other, or present with fewer weeks than its
+  -- parent in either period (a partial feed gap still moves the parent total), flagged on the parent (B12)
   INSERT INTO SR_DB.APP.ARTEFACT_CHECK (RUN_ID, CMP_CODE, MARKET_ID, CATEGORY, BRAND, RULE_ID, SEVERITY, EVIDENCE)
   SELECT :P_RUN_ID, cmp.CMP_CODE, m.PARENT_MARKET_ID, :category, NULL, 'R2_FEED', 'HIGH',
          OBJECT_CONSTRUCT('child_market', m.MARKET_NAME, 'child_market_id', m.MARKET_ID,
                           'sales_cur', COALESCE(c1.CAT_VALUE_SALES, 0), 'sales_base', COALESCE(c0.CAT_VALUE_SALES, 0),
+                          'weeks_cur', COALESCE(c1.N_WEEKS, 0), 'weeks_base', COALESCE(c0.N_WEEKS, 0),
+                          'parent_weeks_cur', p1.N_WEEKS, 'parent_weeks_base', p0.N_WEEKS,
                           'source', 'CORE.DT_CAT_PERIOD')
   FROM SR_DB.SRC.V_SRC_MARKET m
   CROSS JOIN (SELECT column1 AS CMP_CODE, column2 AS CUR_P, column3 AS BASE_P
@@ -98,8 +102,12 @@ BEGIN
                           ('L12W_VS_YA','L12W','L12W_YA'), ('L52W_VS_YA','L52W','L52W_YA')) cmp
   LEFT JOIN SR_DB.CORE.DT_CAT_PERIOD c1 ON c1.MARKET_ID = m.MARKET_ID AND c1.PERIOD_CODE = cmp.CUR_P  AND c1.CATEGORY = :category
   LEFT JOIN SR_DB.CORE.DT_CAT_PERIOD c0 ON c0.MARKET_ID = m.MARKET_ID AND c0.PERIOD_CODE = cmp.BASE_P AND c0.CATEGORY = :category
+  LEFT JOIN SR_DB.CORE.DT_CAT_PERIOD p1 ON p1.MARKET_ID = m.PARENT_MARKET_ID AND p1.PERIOD_CODE = cmp.CUR_P  AND p1.CATEGORY = :category
+  LEFT JOIN SR_DB.CORE.DT_CAT_PERIOD p0 ON p0.MARKET_ID = m.PARENT_MARKET_ID AND p0.PERIOD_CODE = cmp.BASE_P AND p0.CATEGORY = :category
   WHERE m.PARENT_MARKET_ID = :parent
-    AND (COALESCE(c1.CAT_VALUE_SALES, 0) = 0) <> (COALESCE(c0.CAT_VALUE_SALES, 0) = 0);
+    AND ((COALESCE(c1.CAT_VALUE_SALES, 0) = 0) <> (COALESCE(c0.CAT_VALUE_SALES, 0) = 0)
+         OR (COALESCE(c1.CAT_VALUE_SALES, 0) <> 0 AND COALESCE(c0.CAT_VALUE_SALES, 0) <> 0
+             AND (c1.N_WEEKS < p1.N_WEEKS OR c0.N_WEEKS < p0.N_WEEKS)));
   n := n + SQLROWCOUNT;
 
   -- R3_RESTATE: weeks whose snapshot hash changed since the previous successful run (needs step 3)
