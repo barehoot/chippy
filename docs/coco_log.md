@@ -26,3 +26,4 @@
 | 2026-11-24T09:46:32+00:00 | SR-053 | claude-code | manual | 7 | 255 | T-ART-05, T-E2E-03, T-RANK-02 | no | SR-053: stream, triggered task, replay and reset, T-E2E-03, T-ART-05, T-RANK-02 |
 | 2026-11-24T09:47:32+00:00 | SR-040 | claude-code | manual | 4 | 158 | - | no | SR-040: semantic-layer views, tool views and the SV_SHARE semantic view |
 | 2026-11-24T09:49:45+00:00 | SR-056 | claude-code | manual | 8 | 314 | T-SEC-01, T-SEC-02, T-SEC-03 | no | SR-056: grants, row access policy, app usage, judge role, T-SEC-01..03 |
+| 2026-11-24T09:50:53+00:00 | SR-041 | claude-code | manual | 9 | 297 | test_kb | no | SR-041: method knowledge base, loader and Cortex Search service |
