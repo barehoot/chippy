@@ -6,3 +6,4 @@
 | 2026-11-24T09:20:24+00:00 | SR-002 | claude-code | manual | 6 | 228 | - | no | SR-002: setup DDL, settings, ops tables, feature smoke test |
 | 2026-11-24T09:21:59+00:00 | SR-003 | claude-code | manual | 7 | 277 | T-SRC-01, T-SRC-02, T-SRC-03 | no | SR-003: adapter view template, capability check with E01, T-SRC-01..03 |
 | 2026-11-24T09:23:32+00:00 | SR-010 | claude-code | manual | 3 | 73 | T-CORE-04 | no | SR-010: period calendar dynamic table, T-CORE-04 |
+| 2026-11-24T09:23:32+00:00 | SR-011 | claude-code | manual | 4 | 66 | T-CORE-02 | no | SR-011: brand-week and category-week dynamic tables, T-CORE-02 |
