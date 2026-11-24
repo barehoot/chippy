@@ -28,3 +28,4 @@
 | 2026-11-24T09:49:45+00:00 | SR-056 | claude-code | manual | 8 | 314 | T-SEC-01, T-SEC-02, T-SEC-03 | no | SR-056: grants, row access policy, app usage, judge role, T-SEC-01..03 |
 | 2026-11-24T09:50:53+00:00 | SR-041 | claude-code | manual | 9 | 297 | test_kb | no | SR-041: method knowledge base, loader and Cortex Search service |
 | 2026-11-24T09:53:40+00:00 | SR-042 | claude-code | manual | 7 | 552 | T-TOOL-01, T-TOOL-02, T-TOOL-03, T-TOOL-04, T-TOOL-05 | no | SR-042: name resolver and the five agent tool procedures, T-TOOL-01..05 |
+| 2026-11-24T09:54:13+00:00 | SR-043 | claude-code | manual | 3 | 149 | - | no | SR-043: Cortex Agent specification and CoWork registration (+ SR-045 stretch steps) |
