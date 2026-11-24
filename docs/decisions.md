@@ -28,3 +28,12 @@ they are measured, never estimated.
   rows, `RESIDUAL_PTS` is NULL instead of `100 * D_SHARE`. The LLD formula made the residual equal the whole change
   in mode D, which contradicts T-BR-01 ("every OK row has |residual| < 1e-6") on any account without %ACV. Found by
   the randomised property test in `python/tests/test_bridge.py`.
+- **B04 Suppression looks only at earlier weeks (SR-026).** The look-back takes the latest successful run of
+  each of the last `SUPPRESS_RUNS` as-of weeks before the current one. Counting every run would make a forced
+  rerun of the same week ("Rerun this week" in the admin app) suppress everything it selected the first time,
+  so the rerun's brief would come out empty. T-RANK-02 (two consecutive replay weeks) is unaffected.
+- **B05 One comparison per brand and market in the brief (SR-026).** If a brand x market passes the gates on
+  several comparisons, only its highest-scoring one is eligible for selection; the others keep their rank and
+  carry the reason "Another comparison of this brand and market ranks higher". Without it, "L4W vs YA" and
+  "L12W vs YA" for the same brand can take two of the five brief slots. Remove the `BEST_CMP` term in
+  `406_sp_rank.sql` to undo.
