@@ -12,3 +12,4 @@
 | 2026-11-24T09:26:48+00:00 | SR-020 | claude-code | manual | 5 | 280 | T-DET-01, T-DET-02 | no | SR-020: L5 result tables, shift detector, T-DET-01..02 |
 | 2026-11-24T09:27:12+00:00 | SR-021 | claude-code | manual | 3 | 87 | T-ML-01 | no | SR-021: anomaly detection on weekly share, T-ML-01 |
 | 2026-11-24T09:30:38+00:00 | SR-022 | claude-code | manual | 10 | 491 | T-BR-01, T-BR-03, T-BR-04, test_bridge | no | SR-022: exact LMDI share bridge (SQL view + procedure), Python mirror, T-BR-01..05 |
+| 2026-11-24T09:32:36+00:00 | SR-024 | claude-code | manual | 7 | 371 | T-ART-01, T-ART-02, T-ART-03, T-ART-04 | no | SR-024: artefact gate R1-R6 with evidence, snapshot hashes, T-ART-01..04 |
