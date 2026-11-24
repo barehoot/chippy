@@ -32,3 +32,4 @@
 | 2026-11-24T09:56:27+00:00 | SR-044 | claude-code | manual | 5 | 426 | test_eval | no | SR-044: golden set (30 questions, T3 mix) and the evaluation runner |
 | 2026-11-24T09:58:34+00:00 | SR-054 | claude-code | manual | 8 | 337 | - | no | SR-054: email integration, alert on new brief, observability and cost (+ SR-055, SR-057 stretch) |
 | 2026-11-24T10:04:45+00:00 | SR-050 | claude-code | manual | 12 | 840 | - | no | SR-050: Streamlit apps: project, navigation, data layer, Radar with replay panel |
+| 2026-11-24T10:04:45+00:00 | SR-051 | claude-code | manual | 4 | 371 | test_ui | no | SR-051: Streamlit shift detail and Altair charts, T-UI-01 |
