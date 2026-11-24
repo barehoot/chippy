@@ -7,3 +7,4 @@
 | 2026-11-24T09:21:59+00:00 | SR-003 | claude-code | manual | 7 | 277 | T-SRC-01, T-SRC-02, T-SRC-03 | no | SR-003: adapter view template, capability check with E01, T-SRC-01..03 |
 | 2026-11-24T09:23:32+00:00 | SR-010 | claude-code | manual | 3 | 73 | T-CORE-04 | no | SR-010: period calendar dynamic table, T-CORE-04 |
 | 2026-11-24T09:23:32+00:00 | SR-011 | claude-code | manual | 4 | 66 | T-CORE-02 | no | SR-011: brand-week and category-week dynamic tables, T-CORE-02 |
+| 2026-11-24T09:23:32+00:00 | SR-012 | claude-code | manual | 7 | 139 | T-CORE-01 | no | SR-012: period, share-compare and share-week dynamic tables, grid view, T-CORE-01 |
