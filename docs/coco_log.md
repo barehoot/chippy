@@ -4,3 +4,4 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2026-11-24T09:19:03+00:00 | SR-001 | claude-code | manual | 0 | 0 | - | no | SR-001 repo check: 5 skills, reviewer, Stop hook present; L2 tree; pytest.ini |
 | 2026-11-24T09:20:24+00:00 | SR-002 | claude-code | manual | 6 | 228 | - | no | SR-002: setup DDL, settings, ops tables, feature smoke test |
+| 2026-11-24T09:21:59+00:00 | SR-003 | claude-code | manual | 7 | 277 | T-SRC-01, T-SRC-02, T-SRC-03 | no | SR-003: adapter view template, capability check with E01, T-SRC-01..03 |
