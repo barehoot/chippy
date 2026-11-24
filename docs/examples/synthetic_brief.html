@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Share Radar brief (synthetic data)</title>
+<style>
+body { font: 15px/1.5 -apple-system, "Segoe UI", sans-serif; color: #1f1e1c; max-width: 760px; margin: 2rem auto; padding: 0 1rem }
+h1 { font-size: 1.35rem } h2 { font-size: 1.1rem; margin-top: 1.6rem } .meta { color: #52514e; font-size: .9rem }
+.fact { border-bottom: 1px dotted #898781; cursor: help }
+.note { background: #f0efec; padding: .6rem .8rem; border-radius: 6px; font-size: .9rem; color: #52514e }
+</style></head><body>
+<p class="note">Example output from <code>tests/local/run_local.py</code>: the repository's SQL run on DuckDB with
+synthetic data, and the deterministic template brief (no LLM). Brand, retailer and manufacturer names are invented.
+Hover over a number to see the table and column it was read from.</p>
+<div class="sr-brief">
+<h1>Top shift for Acme Foods: Crunchy in MegaMart, <span class="fact" title="APP.SHIFT_RANKED#SHIFT_ID=96978665d74e7223015343d2ed7ed71a;col=D_SHARE*100">-9.18 pts</span> (last four weeks vs the previous four).</h1>
+<p class="meta">Week ending <span class="fact" title="OPS.RUN_LOG#RUN_ID=local-001;col=AS_OF_WEEK">2026-11-07</span> · Biscuits · All India · focus Acme Foods</p>
+<div class="shift">
+<h2>Crunchy lost share in MegaMart</h2>
+<p class="meta">last four weeks vs the previous four · market move</p>
+<p>Largest driver: distribution (<span class="fact" title="APP.SHARE_BRIDGE#SHIFT_ID=96978665d74e7223015343d2ed7ed71a;col=DIST_PTS">-9.44 pts</span>). Golden Bake took the most (<span class="fact" title="APP.SHARE_FLOW#RUN_ID=local-001;CMP_CODE=L4W_VS_PP;MARKET_ID=M1;FROM_BRAND=Crunchy;TO_BRAND=Golden Bake;col=FLOW_PTS">+2.21 pts</span>).</p>
+<p><b>So what:</b> Check distribution for Crunchy in MegaMart.</p>
+<p><b>Ask next:</b> Who took the share?</p>
+</div>
+<div class="shift">
+<h2>Golden Bake gained share in QuickShop</h2>
+<p class="meta">last twelve weeks vs year ago · market move</p>
+<p>Largest driver: distribution (<span class="fact" title="APP.SHARE_BRIDGE#SHIFT_ID=4bb6acca5ef34638ac39f34012381015;col=DIST_PTS">+1.83 pts</span>). It came mostly from Crunchy (<span class="fact" title="APP.SHARE_FLOW#RUN_ID=local-001;CMP_CODE=L12W_VS_YA;MARKET_ID=M2;FROM_BRAND=Crunchy;TO_BRAND=Golden Bake;col=FLOW_PTS">+0.61 pts</span>).</p>
+<p><b>So what:</b> Check distribution for Golden Bake in QuickShop.</p>
+<p><b>Ask next:</b> Who lost the share Golden Bake gained?</p>
+</div>
+<div class="shift">
+<h2>Crunchy lost share in QuickShop</h2>
+<p class="meta">last four weeks vs the previous four · market move</p>
+<p>Largest driver: distribution (<span class="fact" title="APP.SHARE_BRIDGE#SHIFT_ID=918c25e6d1e1bdacea18a87e63948ffa;col=DIST_PTS">-1.37 pts</span>). Golden Bake took the most (<span class="fact" title="APP.SHARE_FLOW#RUN_ID=local-001;CMP_CODE=L4W_VS_PP;MARKET_ID=M2;FROM_BRAND=Crunchy;TO_BRAND=Golden Bake;col=FLOW_PTS">+2.34 pts</span>).</p>
+<p><b>So what:</b> Check distribution for Crunchy in QuickShop.</p>
+<p><b>Ask next:</b> Who took the share?</p>
+</div>
+<div class="shift">
+<h2>Tea Time gained share in MegaMart</h2>
+<p class="meta">last twelve weeks vs year ago · market move</p>
+<p>Largest driver: velocity (<span class="fact" title="APP.SHARE_BRIDGE#SHIFT_ID=55bc74b221588a5372348f6b9906ccc6;col=VELOCITY_PTS">+0.41 pts</span>). It came mostly from Crunchy (<span class="fact" title="APP.SHARE_FLOW#RUN_ID=local-001;CMP_CODE=L12W_VS_YA;MARKET_ID=M1;FROM_BRAND=Crunchy;TO_BRAND=Tea Time;col=FLOW_PTS">+0.74 pts</span>).</p>
+<p><b>So what:</b> Check velocity for Tea Time in MegaMart.</p>
+<p><b>Ask next:</b> Who lost the share Tea Time gained?</p>
+</div>
+<div class="shift">
+<h2>Golden Bake gained share in MegaMart</h2>
+<p class="meta">last four weeks vs the previous four · market move</p>
+<p>Largest driver: distribution (<span class="fact" title="APP.SHARE_BRIDGE#SHIFT_ID=3309292b6500a9003f33dfbc2e301797;col=DIST_PTS">+1.55 pts</span>). It came mostly from Crunchy (<span class="fact" title="APP.SHARE_FLOW#RUN_ID=local-001;CMP_CODE=L4W_VS_PP;MARKET_ID=M1;FROM_BRAND=Crunchy;TO_BRAND=Golden Bake;col=FLOW_PTS">+2.21 pts</span>).</p>
+<p><b>So what:</b> Check distribution for Golden Bake in MegaMart.</p>
+<p><b>Ask next:</b> Who lost the share Golden Bake gained?</p>
+</div>
+<h2>Held back for data checks</h2><ul>
+<li>Crunchy in All India, last four weeks vs the previous four: <span class="fact" title="APP.SHIFT_RANKED#SHIFT_ID=3abf0312ebcf8381d36eda31554e9455;col=D_SHARE*100">-3.26 pts</span> (retailer feed change)</li>
+<li>Golden Bake in All India, last four weeks vs year ago: <span class="fact" title="APP.SHIFT_RANKED#SHIFT_ID=8bcffa02bd0d3c293533afb8dd9bbbe4;col=D_SHARE*100">+1.46 pts</span> (retailer feed change)</li>
+<li>Butter Joy in All India, last four weeks vs the previous four: <span class="fact" title="APP.SHIFT_RANKED#SHIFT_ID=f7c2c205212fd4e0c5a472259ae1ba70;col=D_SHARE*100">+0.74 pts</span> (retailer feed change)</li>
+</ul>
+<h2>Watchlist</h2><ul><li>Choco Bites in MegaMart: latest-week distribution share <span class="fact" title="APP.EARLY_WARNING#RUN_ID=local-001;MARKET_ID=M1;BRAND=Choco Bites;SIGNAL=DIST_DROP;col=LEVER_CHG">-30.6%</span> against L4W; about <span class="fact" title="APP.EARLY_WARNING#RUN_ID=local-001;MARKET_ID=M1;BRAND=Choco Bites;SIGNAL=DIST_DROP;col=PROJECTED_SHARE_PTS">-5.62 pts</span> on next L4W share if it persists.</li><li>Choco Bites in All India: latest-week distribution share <span class="fact" title="APP.EARLY_WARNING#RUN_ID=local-001;MARKET_ID=M0;BRAND=Choco Bites;SIGNAL=DIST_DROP;col=LEVER_CHG">-9.3%</span> against L4W; about <span class="fact" title="APP.EARLY_WARNING#RUN_ID=local-001;MARKET_ID=M0;BRAND=Choco Bites;SIGNAL=DIST_DROP;col=PROJECTED_SHARE_PTS">-1.79 pts</span> on next L4W share if it persists.</li></ul>
+</div>
+</body></html>
